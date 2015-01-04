@@ -53,11 +53,6 @@ ROOT_URLCONF = 'cr_server.urls'
 
 WSGI_APPLICATION = 'cr_server.wsgi.application'
 
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-    }
-}
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -73,7 +68,14 @@ DATABASES = {
 }
 
 if os.getenv("cr_mode") == "PROD":
-    DATABASES['default'] =  dj_database_url.config()
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'd1fu8ns6jqcld9',
+        'USER': 'uwanpsrnkkuidh',
+        'PASSWORD': 'qHYaVLrFJqoYYe5nBY2V0NDSx5',
+        'HOST': 'ec2-54-243-245-159.compute-1.amazonaws.com',
+        'PORT': '5432',
+    }
 
 
 # Internationalization
