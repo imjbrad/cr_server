@@ -36,6 +36,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'app_user',
     'cr_app',
 )
 
@@ -53,6 +54,7 @@ ROOT_URLCONF = 'cr_server.urls'
 
 WSGI_APPLICATION = 'cr_server.wsgi.application'
 
+AUTH_USER_MODEL = 'app_user.User'
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
@@ -66,6 +68,9 @@ DATABASES = {
         'PORT': '5432',
     }
 }
+
+#in heroku, use the production database
+# i have a enviornment variable set in the heroku settings
 
 if os.getenv("cr_mode") == "PROD":
     DATABASES['default'] = {
@@ -95,15 +100,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.7/howto/static-files/
 
+# Simplified static file serving.
+# https://warehouse.python.org/project/whitenoise/
+# from https://devcenter.heroku.com/articles/django-assets
+
 STATIC_ROOT = 'staticfiles'
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
-
-# Simplified static file serving.
-# https://warehouse.python.org/project/whitenoise/
-# from https://devcenter.heroku.com/articles/django-assets
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
