@@ -53,6 +53,11 @@ ROOT_URLCONF = 'cr_server.urls'
 
 WSGI_APPLICATION = 'cr_server.wsgi.application'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+    }
+}
 
 # Database
 # https://docs.djangoproject.com/en/1.7/ref/settings/#databases
