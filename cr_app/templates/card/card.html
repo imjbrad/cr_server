@@ -1,0 +1,5 @@
+<h2>{{ title }} - {% for author in authors %}{{ author }}{% endfor %}</h2>
+<br>
+{% for insight in insights_votes %}
+    <h3>{{ insight.name }}</h3>
+{% endfor %}
