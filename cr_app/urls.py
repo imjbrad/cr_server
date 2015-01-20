@@ -15,10 +15,12 @@ urlpatterns = patterns('',
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/?', views.GetOrUpdateArticleQuestion.as_view(), name='article-question'),
     url(r'^article/(?P<article_pk>[\d]+)/question/ask/?', views.PostArticleQuestion.as_view(), name='ask-article-question'),
 
-    url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/(?P<vote_pk>[\d]+)/?', views.GetUpdateOrDeleteArticleVote.as_view(), name='edit-article-vote'),
-    url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?', views.PostArticleVote.as_view(), name='article-vote'),
+    url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?(?P<vote_pk>[\d]+)?/?', views.GetPostUpdateOrDeleteArticleVote.as_view(), name='edit-article-vote'),
+    # url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?', views.PostArticleVote.as_view(), name='article-vote'),
 
     url(r'^article/(?P<pk>[\d]+)?/?', views.GetArticle.as_view(), name='article-instance'),
+
+    url(r'^me/?', views.GetUser.as_view(), name='user-instance'),
 
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 

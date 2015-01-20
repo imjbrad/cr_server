@@ -1,8 +1,15 @@
 from django.core.paginator import Paginator
 from rest_framework import serializers, pagination
 from cr_app import models
+from app_user.models import User
+import json
 
 __author__ = 'jordanbradley'
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('pk', 'email')
 
 class PublisherSerializer(serializers.ModelSerializer):
     class Meta:
@@ -41,10 +48,22 @@ class PaginatedQuestionSerializer(pagination.PaginationSerializer):
     class Meta:
         object_serializer_class = QuestionSerializer
 
+
+class ArticleInsightVotesSerializer(serializers.ModelSerializer):
+    insight_votes = serializers.SerializerMethodField('insight_votes_json')
+
+    class Meta:
+        model = models.Article
+        fields = ('insight_votes',)
+
+    def insight_votes_json(self, obj):
+        return obj.insight_votes if self.parent is None else obj
+
 class ArticleSerializer(serializers.ModelSerializer):
     publisher = PublisherSerializer()
     authors = AuthorSerializer(many=True)
     questions = serializers.SerializerMethodField('paginated_questions')
+    insight_votes = ArticleInsightVotesSerializer()
 
     class Meta:
         model = models.Article
@@ -56,9 +75,3 @@ class ArticleSerializer(serializers.ModelSerializer):
 
         serializer = PaginatedQuestionSerializer(questions)
         return serializer.data
-
-
-class ArticleInsightVotesSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Article
-        fields = ('insight_votes',)

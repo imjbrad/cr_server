@@ -1,9 +1,24 @@
 from django import http
 from django.core import exceptions as django_exceptions
-from rest_framework import generics, status, response, mixins
+from rest_framework import generics, status, response, mixins, permissions as rest_permissions
 from rest_framework import exceptions as rest_exceptions
 from cr_app.article_service.article import ArticleHelper
-from cr_app import models, serializers, permissions, errors
+from cr_app import models, serializers, permissions, codes
+from app_user.models import User
+from rest_framework_jwt.utils import jwt_decode_handler
+
+class GetUser(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = serializers.UserSerializer
+    permission_classes = (rest_permissions.IsAuthenticated,)
+
+    def get(self, request, *args, **kwargs):
+        try:
+            data = jwt_decode_handler(self.request.auth)
+            return response.Response(data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise rest_exceptions.APIException(e)
+
 
 class GetArticle(generics.RetrieveAPIView):
     queryset = models.Article.objects.all()
@@ -79,7 +94,7 @@ class PostArticleQuestionUpvote(generics.CreateAPIView):
 
         #catch an exception from cleaning the upvote, and pass that to the serializer
         except django_exceptions.ValidationError as e:
-            if e.code == errors.ALREADY_UPVOTED:
+            if e.code == codes.ALREADY_UPVOTED:
                 raise rest_exceptions.ValidationError({"pk": e.params["pk"], "message": e.message})
 
             raise rest_exceptions.ValidationError(e.message)
@@ -127,6 +142,7 @@ class PostArticleVote(generics.CreateAPIView):
     model = models.Vote
     serializer_class = serializers.VoteSerializer
 
+
     def post(self, request, *args, **kwargs):
         user = self.request.user
 
@@ -151,18 +167,52 @@ class PostArticleVote(generics.CreateAPIView):
 
         # serializer.save()
 
-class GetUpdateOrDeleteArticleVote(generics.RetrieveUpdateDestroyAPIView):
+class GetPostUpdateOrDeleteArticleVote(generics.RetrieveUpdateDestroyAPIView):
     model = models.Vote
     serializer_class = serializers.VoteSerializer
     queryset = models.Vote.objects.all()
-    permission_classes = (permissions.IsOwnerOrNoPermissions,)
+    permission_classes = (rest_permissions.IsAuthenticated, permissions.IsOwnerOrNoPermissions,)
 
     def get_object(self):
         user = self.request.user
-        vote = generics.get_object_or_404(self.queryset, pk=self.kwargs["vote_pk"])
+        if ("vote_pk" in self.kwargs) and (self.kwargs["vote_pk"] != None):
+            vote = generics.get_object_or_404(self.queryset, pk=self.kwargs["vote_pk"])
+        else:
+            try:
+                vote = models.Vote.objects.get(
+                    article=models.Article.objects.get(pk=self.kwargs["article_pk"]),
+                    insight=models.CRInsight.objects.get(pk=self.kwargs["insight_pk"]),
+                    user=self.request.user
+                )
+            except:
+                raise http.Http404
+
         self.check_object_permissions(self.request, vote)
 
         return vote
+
+    def post(self, request, *args, **kwargs):
+        user = self.request.user
+
+        try:
+            article = models.Article.objects.get(pk=self.kwargs['article_pk'])
+            insight = models.CRInsight.objects.get(pk=self.kwargs['insight_pk'])
+        except:
+            raise rest_exceptions.ValidationError("Something went wrong with your contribution")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        vote = self.model(article=article, user=user, insight=insight, **serializer.validated_data)
+
+        try:
+            vote.clean()
+            vote.save()
+            return response.Response(self.serializer_class(vote).data, status=status.HTTP_201_CREATED)
+
+        except django_exceptions.ValidationError as e:
+            raise rest_exceptions.ValidationError(e.message)
+
+
 
 class GetArticleInsightVotes(generics.RetrieveAPIView):
     model = models.Article

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.7/ref/settings/
 """
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-import os, dj_database_url
+import os, dj_database_url, datetime
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -37,8 +37,9 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'app_user',
-    'cr_app',
+    'cr_app'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -49,6 +50,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware'
 )
 
 ROOT_URLCONF = 'cr_server.urls'
@@ -118,15 +120,19 @@ REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
     ),
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
-    ),
+    )
 }
+
+CORS_ORIGIN_ALLOW_ALL = True
 
 JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True,
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(days=7),
 }

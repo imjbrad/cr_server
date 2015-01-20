@@ -1,10 +1,12 @@
 from django.core import exceptions
 from django.db import models
-from jsonfield import JSONField
+from jsonfield import JSONField, JSONCharField
 from django.db.models.signals import post_save, pre_save, post_delete, m2m_changed
 from django.dispatch import receiver
 from cr_server import settings
-from cr_app import errors
+from cr_app import codes
+import collections
+import json
 
 class Publisher(models.Model):
 
@@ -25,6 +27,7 @@ class Author(models.Model):
 class CRInsight(models.Model):
 
     name = models.CharField(max_length=160)
+    category = models.CharField(max_length=160, choices=codes.INSIGHT_CATEGORIES)
 
     def __str__(self):
         return self.name
@@ -51,12 +54,59 @@ class Article(models.Model):
     def __str__(self):
         return self.title
 
+    def sync_insight_vote(self, vote):
+
+        insight = self.insight_votes[vote.insight.category][vote.insight.name]
+        total_vote_count = insight["vote_total"]
+        insight_votes = insight["insight_votes"][json.dumps(vote.choice.pk)]
+        insight_votes_count = insight_votes['count']
+
+        if (insight_votes_count >=0) and (total_vote_count >=0):
+            insight.__setitem__("vote_total", total_vote_count+1)
+            insight_votes.__setitem__('count', insight_votes_count+1)
+
+    # def modify_insight_vote(self, old_vote, new_vote):
+    #
+    #     new_insight = self.insight_votes[new_vote.insight.category][new_vote.insight.name]
+    #     old_insight = self.insight_votes[old_vote.insight.category][old_vote.insight.name]
+    #
+    #     if old_vote.insight != new_vote.insight:
+    #
+    #         old_vote_total = old_insight["vote_total"]
+    #         new_vote_total = new_insight["vote_total"]
+    #
+    #         if old_vote_total > 0:
+    #             old_insight.__setitem__("vote_total", old_vote_total-1)
+    #             new_insight.__setitem__("vote_total", new_vote_total+1)
+    #
+    #     if (old_vote.choice != new_vote.choice):
+    #         old_insight_votes = old_insight["insight_votes"][json.dumps(old_vote.choice.pk)]
+    #         new_insight_votes = new_insight["insight_votes"][json.dumps(new_vote.choice.pk)]
+    #
+    #         old_insight_choice_count = old_insight["insight_votes"][json.dumps(old_vote.choice.pk)]['count']
+    #         new_insight_choice_count = new_insight["insight_votes"][json.dumps(new_vote.choice.pk)]['count']
+    #
+    #         if old_insight_choice_count > 0:
+    #             old_insight_votes.__setitem__('count', old_insight_choice_count-1)
+    #             new_insight_votes.__setitem__('count', new_insight_choice_count+1)
+
+    def remove_insight_vote(self, vote):
+        insight = self.insight_votes[vote.insight.category][vote.insight.name]
+        total_vote_count = insight["vote_total"]
+        insight_votes = insight["insight_votes"][json.dumps(vote.choice.pk)]
+        insight_votes_count = insight_votes['count']
+
+        if (insight_votes_count >0) and (total_vote_count >0):
+            insight.__setitem__("vote_total", total_vote_count-1)
+            insight_votes.__setitem__('count', insight_votes_count-1)
+
+
 class Question(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
 
     article = models.ForeignKey(Article, related_name="questions")
     title = models.CharField(max_length=160)
-    upvotes = models.IntegerField(default=0)
+    upvotes = models.PositiveIntegerField(default=0)
     answered = models.BooleanField(default=False)
 
     def __str__(self):
@@ -73,7 +123,6 @@ class Question(models.Model):
         return upvote
 
     def downvote(self, user, upvote):
-
         upvote.delete()
 
         self.upvotes -= 1
@@ -97,7 +146,7 @@ class UpVote(models.Model):
             pass
 
         if existing_upvote is not None:
-            raise exceptions.ValidationError("You have already upvoted this question", code=errors.ALREADY_UPVOTED, params={"pk": existing_upvote.pk})
+            raise exceptions.ValidationError("You have already upvoted this question", code=codes.ALREADY_UPVOTED, params={"pk": existing_upvote.pk})
 
 
 class Answer(models.Model):
@@ -134,10 +183,10 @@ class Vote(models.Model):
         existing_vote = None
 
         try:
-            existing_vote = Vote.objects.get(user=self.user, article=self.article, insight=self.insight, choice=self.choice)
+            existing_vote = Vote.objects.get(user=self.user, article=self.article, insight=self.insight)
 
             if existing_vote is not None:
-                raise exceptions.ValidationError("You can't vote  make the same vote twice", code=errors.DUPLICATE_VOTE, params={"pk": existing_vote.pk})
+                raise exceptions.ValidationError("You can't vote twice", code=codes.DUPLICATE_VOTE, params={"pk": existing_vote.pk})
 
         except exceptions.ObjectDoesNotExist:
             pass
@@ -149,56 +198,54 @@ class Vote(models.Model):
 #they won't have to perform a long query for it
 @receiver(m2m_changed, sender=Article.insights.through)
 def update_insight_votes_keys(sender, instance, action, model, pk_set, **kwargs):
-    if action == 'post_add':
-        article = instance
-        changed = False
-        for insight in CRInsight.objects.filter(pk__in=pk_set):
-            if insight.name not in article.insight_votes:
-                changed = True
-                article.insight_votes[insight.name] = {}
-                insight_choices = article.insight_votes[insight.name]
-                for choice in insight.choices.all():
-                    insight_choices[choice.choice_text] = 0
-        if changed:
+
+        if (action == 'post_add') or (action == 'post_remove'):
+            article = instance
+            article.insight_votes = dict()
+
+            for insight in article.insights.all():
+
+                if insight.category in article.insight_votes:
+                    category_dict = article.insight_votes[insight.category]
+                else:
+                    category_dict = article.insight_votes[insight.category] = {}
+
+                if insight.name in article.insight_votes[insight.category]:
+                    insight_dict = article.insight_votes[insight.category][insight.name]
+                else:
+                    insight_dict =article.insight_votes[insight.category][insight.name] = {}
+
+                insight_dict["category"] = insight.category
+                insight_dict["pk"] = insight.pk
+                insight_dict["name"] = insight.name
+
+                insight_votes = article.votes.filter(insight=insight)
+
+                insight_dict["vote_total"] = insight_votes.count()
+                insight_dict["enabled"] = True
+                insight_dict["insight_votes"] = {choice.pk:{"choice":choice.choice_text,"count":insight_votes.filter(choice=choice).count()} for choice in insight.choices.all()}
+
             article.save()
+
 
 @receiver(pre_save, sender=Vote)
 def update_insight_votes_on_add(sender, instance, **kwargs):
     vote = instance
-    article = Article.objects.get(pk=vote.article.pk)
-    insights_votes = article.insight_votes
-    #new vote
+    article = Article.objects.get(pk=instance.article.pk)
+
     if not vote.pk:
-        insight_choices = insights_votes[vote.insight.name]
-        insight_choices[vote.choice.choice_text] += 1
+        article.sync_insight_vote(vote)
 
-    else:
-        old_vote = Vote.objects.get(pk=vote.pk)
-        if old_vote.choice != vote.choice: #if you're changing your vote choice
-            insights_votes[old_vote.insight.name][old_vote.choice.choice_text] -= 1
-            insights_votes[vote.insight.name][vote.choice.choice_text] += 1
+    # else:
+    #     old_vote = Vote.objects.get(pk=vote.pk)
+    #     article.modify_insight_vote(old_vote, vote)
 
-    # article.save()
+    article.save()
 
 
 @receiver(post_delete, sender=Vote)
 def update_insight_votes_on_delete(sender, instance, **kwargs):
     vote = instance
-    article = Article.objects.get(pk=vote.article.pk)
-    insights_votes = article.insight_votes
-    insights_votes[vote.insight.name][vote.choice.choice_text] -= 1
-
+    article = Article.objects.get(pk=instance.article.pk)
+    article.remove_insight_vote(vote)
     article.save()
-
-# reciveres for updating a questions upvotes field when an upvote is saved or deleted
-# @receiver(post_save, sender=UpVote)
-# def update_upvotes_on_add(sender, instance, **kwargs):
-#     upvote = instance
-#     question = Question.objects.get(pk=upvote.question.pk)
-#     question.upvote(user=upvote.user)
-#
-# @receiver(post_delete, sender=UpVote)
-# def update_upvotes_on_delete(sender, instance, **kwargs):
-#     upvote = instance
-#     question = Question.objects.get(pk=upvote.question.pk)
-#     question.downvote(user=upvote.user)
