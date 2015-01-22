@@ -36,9 +36,16 @@ class CRInsightChoice(models.Model):
 
     insight = models.ForeignKey(CRInsight, related_name="choices")
     choice_text = models.CharField(max_length=200)
+    choice_display_name = models.CharField(max_length=200, blank=True)
 
     def __str__(self):
         return self.choice_text
+
+    def save(self, *args, **kwargs):
+        if self.choice_display_name == "":
+            self.choice_display_name = self.choice_text
+        super(CRInsightChoice, self).save(*args, **kwargs)
+
 
 
 class Article(models.Model):
@@ -223,7 +230,7 @@ def update_insight_votes_keys(sender, instance, action, model, pk_set, **kwargs)
 
                 insight_dict["vote_total"] = insight_votes.count()
                 insight_dict["enabled"] = True
-                insight_dict["insight_votes"] = {choice.pk:{"choice":choice.choice_text,"count":insight_votes.filter(choice=choice).count()} for choice in insight.choices.all()}
+                insight_dict["insight_votes"] = {choice.pk:{"choice_display_name":choice.choice_display_name, "choice":choice.choice_text,"count":insight_votes.filter(choice=choice).count()} for choice in insight.choices.all()}
 
             article.save()
 

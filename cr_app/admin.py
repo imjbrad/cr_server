@@ -45,7 +45,7 @@ class VoteAdmin(admin.ModelAdmin):
 
 
 class ArticleAdmin(admin.ModelAdmin):
-    inlines = [ManageVotesInline, ManageQuestionsInline]
+    inlines = [ManageQuestionsInline]
     readonly_fields = ['insight_votes', 'pk']
 
 # Register your models here.
