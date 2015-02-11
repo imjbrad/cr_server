@@ -9,11 +9,13 @@ urlpatterns = patterns('',
     url(r'^article/(?P<pk>[\d]+)/topics/?', views.GetArticleInsightVotes.as_view(), name='article-insight-votes'),
     url(r'^article/(?P<pk>[\d]+)/questions/?', views.GetArticleQuestions.as_view(), name='article-questions'),
 
-    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/(?P<upvote_pk>[\d]+)/?', views.DeleteArticleQuestionUpvote.as_view(), name='delete-upvote-article-question'),
+    url(r'^article/(?P<article_pk>[\d]+)/question/ask/?', views.PostArticleQuestion.as_view(), name='ask-article-question'),
+
+    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/find/?', views.FindArticleQuestionUpvote.as_view(), name='find-upvote-article-question'),
+    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/(?P<upvote_pk>[\d]+)/?', views.GetOrDeleteArticleQuestionUpvote.as_view(), name='delete-upvote-article-question'),
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/?', views.PostArticleQuestionUpvote.as_view(), name='upvote-article-question'),
 
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/?', views.GetOrUpdateArticleQuestion.as_view(), name='article-question'),
-    url(r'^article/(?P<article_pk>[\d]+)/question/ask/?', views.PostArticleQuestion.as_view(), name='ask-article-question'),
 
     url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?(?P<vote_pk>[\d]+)?/?', views.GetPostUpdateOrDeleteArticleVote.as_view(), name='edit-article-vote'),
     # url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?', views.PostArticleVote.as_view(), name='article-vote'),

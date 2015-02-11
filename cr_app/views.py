@@ -13,9 +13,11 @@ class GetUser(generics.RetrieveAPIView):
     permission_classes = (rest_permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
+
         try:
             data = jwt_decode_handler(self.request.auth)
             return response.Response(data, status=status.HTTP_200_OK)
+
         except Exception as e:
             raise rest_exceptions.APIException(e)
 
@@ -51,18 +53,27 @@ class GetArticle(generics.RetrieveAPIView):
 class GetArticleQuestions(generics.ListAPIView):
     model = models.Question
     serializer_class = serializers.QuestionSerializer
-    paginate_by = 10
+    paginate_by = 6
     paginate_by_param = 'size'
+    pagination_serializer_class = serializers.PaginatedQuestionSerializer
 
     def get_queryset(self):
 
-        self.queryset = models.Question.objects.filter(article__pk=self.kwargs['pk']).order_by('upvotes').reverse()
-        if self.queryset.count():
-            return self.queryset
+        queryset = models.Question.objects.filter(article__pk=self.kwargs['pk']).order_by('upvotes').reverse()
+        filter = self.request.QUERY_PARAMS.get('filter', None)
+        if filter is not None:
+
+            if filter == "me":
+                queryset = queryset.filter(user=self.request.user)
+            if filter == "answered":
+                queryset = queryset.filter(answered=True)
+
+        if queryset.count():
+            return queryset
         else:
             raise http.Http404
 
-class GetOrUpdateArticleQuestion(generics.RetrieveUpdateAPIView):
+class GetOrUpdateArticleQuestion(generics.RetrieveUpdateDestroyAPIView):
     model = models.Question
     serializer_class = serializers.QuestionSerializer
     permission_classes = (permissions.IsOwnerOrReadOnly,)
@@ -99,7 +110,29 @@ class PostArticleQuestionUpvote(generics.CreateAPIView):
 
             raise rest_exceptions.ValidationError(e.message)
 
-class DeleteArticleQuestionUpvote(generics.DestroyAPIView):
+class FindArticleQuestionUpvote(generics.RetrieveAPIView):
+    model = models.UpVote
+    serializer_class = serializers.QuestionUpVoteSerializer
+    permission_classes = (permissions.IsOwnerOrNoPermissions,)
+
+    def get_object(self):
+        user = self.request.user
+        upvote = None
+
+        try:
+            upvote = models.UpVote.objects.get(
+                question=models.Question.objects.get(pk=self.kwargs["question_pk"]),
+                user=self.request.user
+            )
+        except:
+            raise http.Http404
+
+        self.check_object_permissions(self.request, upvote)
+
+        return upvote
+
+
+class GetOrDeleteArticleQuestionUpvote(generics.RetrieveDestroyAPIView):
     model = models.UpVote
     serializer_class = serializers.QuestionUpVoteSerializer
     permission_classes = (permissions.IsOwnerOrNoPermissions,)
@@ -129,7 +162,7 @@ class DeleteArticleQuestionUpvote(generics.DestroyAPIView):
 
 class PostArticleQuestion(generics.CreateAPIView):
     model = models.Question
-    serializer_class = serializers.AskQuestionSerializer
+    serializer_class = serializers.QuestionSerializer
 
     def perform_create(self, serializer):
         try:
