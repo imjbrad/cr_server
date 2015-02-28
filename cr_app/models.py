@@ -1,22 +1,19 @@
 from django.core import exceptions
 from django.db import models
-from jsonfield import JSONField, JSONCharField
-from django.db.models.signals import post_save, pre_save, post_delete, m2m_changed
+from jsonfield import JSONField
+from django.db.models.signals import pre_save, post_delete, m2m_changed
 from django.dispatch import receiver
 from cr_server import settings
 from cr_app import codes
-import collections
 import json
 
 class Publisher(models.Model):
-
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
 
 class Author(models.Model):
-
     name = models.CharField(max_length=30)
     publishers = models.ManyToManyField(Publisher)
 
@@ -25,7 +22,6 @@ class Author(models.Model):
 
 #represents an article poll question that can be voted on
 class CRInsight(models.Model):
-
     name = models.CharField(max_length=160)
     category = models.CharField(max_length=160, choices=codes.INSIGHT_CATEGORIES)
 
@@ -33,7 +29,6 @@ class CRInsight(models.Model):
         return self.name
 
 class CRInsightChoice(models.Model):
-
     insight = models.ForeignKey(CRInsight, related_name="choices")
     choice_text = models.CharField(max_length=200)
     choice_display_name = models.CharField(max_length=200, blank=True)
@@ -46,10 +41,7 @@ class CRInsightChoice(models.Model):
             self.choice_display_name = self.choice_text
         super(CRInsightChoice, self).save(*args, **kwargs)
 
-
-
 class Article(models.Model):
-
     title = models.CharField(max_length=160)
     url = models.URLField(max_length=2083)
     date = models.DateField()
@@ -62,8 +54,7 @@ class Article(models.Model):
         return self.title
 
     def sync_insight_vote(self, vote):
-
-        insight = self.insight_votes[vote.insight.category][vote.insight.name]
+        insight = self.insight_votes[vote.insight.name]
         total_vote_count = insight["vote_total"]
         insight_votes = insight["insight_votes"][json.dumps(vote.choice.pk)]
         insight_votes_count = insight_votes['count']
@@ -72,33 +63,9 @@ class Article(models.Model):
             insight.__setitem__("vote_total", total_vote_count+1)
             insight_votes.__setitem__('count', insight_votes_count+1)
 
-    # def modify_insight_vote(self, old_vote, new_vote):
-    #
-    #     new_insight = self.insight_votes[new_vote.insight.category][new_vote.insight.name]
-    #     old_insight = self.insight_votes[old_vote.insight.category][old_vote.insight.name]
-    #
-    #     if old_vote.insight != new_vote.insight:
-    #
-    #         old_vote_total = old_insight["vote_total"]
-    #         new_vote_total = new_insight["vote_total"]
-    #
-    #         if old_vote_total > 0:
-    #             old_insight.__setitem__("vote_total", old_vote_total-1)
-    #             new_insight.__setitem__("vote_total", new_vote_total+1)
-    #
-    #     if (old_vote.choice != new_vote.choice):
-    #         old_insight_votes = old_insight["insight_votes"][json.dumps(old_vote.choice.pk)]
-    #         new_insight_votes = new_insight["insight_votes"][json.dumps(new_vote.choice.pk)]
-    #
-    #         old_insight_choice_count = old_insight["insight_votes"][json.dumps(old_vote.choice.pk)]['count']
-    #         new_insight_choice_count = new_insight["insight_votes"][json.dumps(new_vote.choice.pk)]['count']
-    #
-    #         if old_insight_choice_count > 0:
-    #             old_insight_votes.__setitem__('count', old_insight_choice_count-1)
-    #             new_insight_votes.__setitem__('count', new_insight_choice_count+1)
 
     def remove_insight_vote(self, vote):
-        insight = self.insight_votes[vote.insight.category][vote.insight.name]
+        insight = self.insight_votes[vote.insight.name]
         total_vote_count = insight["vote_total"]
         insight_votes = insight["insight_votes"][json.dumps(vote.choice.pk)]
         insight_votes_count = insight_votes['count']
@@ -110,7 +77,6 @@ class Article(models.Model):
 
 class Question(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
     article = models.ForeignKey(Article, related_name="questions")
     title = models.CharField(max_length=160)
     upvotes = models.PositiveIntegerField(default=0)
@@ -158,7 +124,6 @@ class UpVote(models.Model):
 
 class Answer(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
     question = models.ForeignKey(Question, related_name="answers")
     answer = models.TextField()
 
@@ -170,7 +135,6 @@ class Answer(models.Model):
 
 class Vote(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-
     article = models.ForeignKey(Article, related_name="votes")
     insight = models.ForeignKey(CRInsight, related_name="votes")
     choice = models.ForeignKey(CRInsightChoice, related_name="votes")
@@ -198,6 +162,20 @@ class Vote(models.Model):
         except exceptions.ObjectDoesNotExist:
             pass
 
+class QuestionFollow(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    question = models.ForeignKey(Question)
+
+    def clean(self, *args, **kwargs):
+        super(QuestionFollow, self).clean(*args, **kwargs)
+        existing_follow = None
+        try:
+            existing_follow = QuestionFollow.objects.get(user=self.user, question=self.question)
+            if existing_follow is not None:
+                raise exceptions.ValidationError("You can't follow a Question twice", code=codes.DUPLICATE_QUESTION_FOLLOW, params={"pk": existing_follow.pk})
+        except exceptions.ObjectDoesNotExist:
+            pass
+
 
 
 #recievers for keeping an articles insight_votes dict in sync with submitted Votes
@@ -212,15 +190,20 @@ def update_insight_votes_keys(sender, instance, action, model, pk_set, **kwargs)
 
             for insight in article.insights.all():
 
-                if insight.category in article.insight_votes:
-                    category_dict = article.insight_votes[insight.category]
-                else:
-                    category_dict = article.insight_votes[insight.category] = {}
+                # if insight.category in article.insight_votes:
+                #     category_dict = article.insight_votes[insight.category]
+                # else:
+                #     category_dict = article.insight_votes[insight.category] = {}
 
-                if insight.name in article.insight_votes[insight.category]:
-                    insight_dict = article.insight_votes[insight.category][insight.name]
+                # if insight.name in article.insight_votes[insight.category]:
+                #     insight_dict = article.insight_votes[insight.category][insight.name]
+                # else:
+                #     insight_dict = article.insight_votes[insight.category][insight.name] = {}
+
+                if insight.name in article.insight_votes:
+                    insight_dict = article.insight_votes[insight.name]
                 else:
-                    insight_dict =article.insight_votes[insight.category][insight.name] = {}
+                    insight_dict = article.insight_votes[insight.name] = {}
 
                 insight_dict["category"] = insight.category
                 insight_dict["pk"] = insight.pk
@@ -230,7 +213,7 @@ def update_insight_votes_keys(sender, instance, action, model, pk_set, **kwargs)
 
                 insight_dict["vote_total"] = insight_votes.count()
                 insight_dict["enabled"] = True
-                insight_dict["insight_votes"] = {choice.pk:{"choice_display_name":choice.choice_display_name, "choice":choice.choice_text,"count":insight_votes.filter(choice=choice).count()} for choice in insight.choices.all()}
+                insight_dict["insight_votes"] = {choice.pk: {"choice_display_name": choice.choice_display_name, "choice": choice.choice_text, "count": insight_votes.filter(choice=choice).count()} for choice in insight.choices.all()}
 
             article.save()
 
@@ -242,10 +225,6 @@ def update_insight_votes_on_add(sender, instance, **kwargs):
 
     if not vote.pk:
         article.sync_insight_vote(vote)
-
-    # else:
-    #     old_vote = Vote.objects.get(pk=vote.pk)
-    #     article.modify_insight_vote(old_vote, vote)
 
     article.save()
 

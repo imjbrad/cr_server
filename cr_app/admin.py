@@ -43,7 +43,6 @@ class VoteAdmin(admin.ModelAdmin):
     form = VoteForm
     pass
 
-
 class ArticleAdmin(admin.ModelAdmin):
     inlines = [ManageQuestionsInline]
     readonly_fields = ['insight_votes', 'pk']

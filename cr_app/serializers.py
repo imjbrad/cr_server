@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator
+from django.core import exceptions
 from rest_framework import serializers, pagination
 from cr_app import models
 from app_user.models import User
@@ -23,14 +24,42 @@ class AuthorSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.ModelSerializer):
     following = serializers.SerializerMethodField()
+    upvoted = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Question
-        fields = ("pk", "title", "upvotes", "answered", "article", "user", "following")
-        read_only_fields = ('upvotes', 'pk', 'user', "article", 'answered',"following")
+        fields = ("pk", "title", "upvotes", "answered", "article", "user", "following", "upvoted")
+        read_only_fields = ('upvotes', 'pk', 'user', "article", 'answered', "following", "upvoted")
 
     def get_following(self, obj):
-        pass
+        follow = None
+        current_user = self.context["request"].user
+        try:
+             follow = models.QuestionFollow.objects.get(user=current_user, question=obj)
+             if follow is not None:
+                 return follow.pk
+        except:
+            pass
+
+        return False
+
+    def get_upvoted(self, obj):
+        upvote = None
+        current_user = self.context["request"].user
+        try:
+             upvote = models.UpVote.objects.get(user=current_user, question=obj)
+             if upvote is not None:
+                 return upvote.pk
+        except:
+            pass
+
+        return False
+
+class QuestionFollowSerializer(serializers.ModelSerializer):
+      class Meta:
+        model = models.QuestionFollow
+        fields = ("pk", "user")
+        read_only_fields = ("pk", "user")
 
 class QuestionUpVoteSerializer(serializers.ModelSerializer):
     class Meta:
@@ -76,11 +105,12 @@ class ArticleSerializer(serializers.ModelSerializer):
     publisher = PublisherSerializer()
     authors = AuthorSerializer(many=True)
     questions = serializers.SerializerMethodField('paginated_questions')
-    insight_votes = ArticleInsightVotesSerializer()
+    insight_votes = serializers.SerializerMethodField()
+    user_insight_votes = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
-        fields = ('pk', 'title', 'url', 'date', 'insight_votes', 'publisher', 'authors', "questions")
+        fields = ('pk', 'title', 'url', 'date', 'insight_votes', 'publisher', 'authors', "questions", "user_insight_votes")
 
     def paginated_questions(self, obj):
         paginator = Paginator(obj.questions.all().order_by('upvotes').reverse(), 10)
@@ -88,3 +118,21 @@ class ArticleSerializer(serializers.ModelSerializer):
 
         serializer = PaginatedQuestionSerializer(questions, context=self.context)
         return serializer.data
+
+    def get_insight_votes(self, obj):
+        insight_votes = obj.insight_votes
+
+        for insight_name in insight_votes:
+            insight = insight_votes[insight_name]
+            try:
+                user_vote = models.Vote.objects.get(user=self.context["request"].user, article=obj, insight__pk=insight["pk"])
+                insight["user_vote"] = VoteSerializer(user_vote).data
+            except:
+                pass
+
+        return [v for k,v in insight_votes.items()]
+
+
+    def get_user_insight_votes(self, obj):
+        user_votes = models.Vote.objects.filter(user=self.context["request"].user, article=obj, insight__pk__in=obj.insights.all())
+        return {v.insight.pk: VoteSerializer(v).data for v in user_votes}

@@ -5,7 +5,7 @@ __author__ = 'jordanbradley'
 
 from cr_app.models import Article, Vote
 from django.db.models import Q
-import urlparse
+import urlparse, urllib
 
 class ArticleHelper(object):
 
@@ -24,6 +24,7 @@ class ArticleHelper(object):
             raise ValueError("Must Provide an article url or id to search for")
 
         if article_url is not None:
+            article_url = urllib.unquote(article_url)
             article_url = ArticleHelper.clean_article_url(article_url)
 
         try:
@@ -33,6 +34,7 @@ class ArticleHelper(object):
 
         return article
 
+    #deprecated
     @staticmethod
     def collect_article_votes(article):
 

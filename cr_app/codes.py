@@ -3,6 +3,7 @@ __author__ = 'jordanbradley'
 #error codes
 ALREADY_UPVOTED = "cr_already_upvoted"
 DUPLICATE_VOTE = "cr_duplicate_vote"
+DUPLICATE_QUESTION_FOLLOW = "cr_duplicate_question_follow"
 
 
 #insight categories

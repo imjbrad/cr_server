@@ -11,6 +11,10 @@ urlpatterns = patterns('',
 
     url(r'^article/(?P<article_pk>[\d]+)/question/ask/?', views.PostArticleQuestion.as_view(), name='ask-article-question'),
 
+    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/follow/find?', views.FindArticleQuestionFollow.as_view(), name='find-article-question-follow'),
+    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/follow/(?P<follow_pk>[\d]+)?', views.DeleteArticleQuestionFollow.as_view(), name='find-article-question-follow'),
+    url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/follow/?', views.PostArticleQuestionFollow.as_view(), name='post-article-question-follow'),
+
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/find/?', views.FindArticleQuestionUpvote.as_view(), name='find-upvote-article-question'),
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/(?P<upvote_pk>[\d]+)/?', views.GetOrDeleteArticleQuestionUpvote.as_view(), name='delete-upvote-article-question'),
     url(r'^article/(?P<article_pk>[\d]+)/question/(?P<question_pk>[\d]+)/upvote/?', views.PostArticleQuestionUpvote.as_view(), name='upvote-article-question'),

@@ -13,11 +13,9 @@ class GetUser(generics.RetrieveAPIView):
     permission_classes = (rest_permissions.IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-
         try:
             data = jwt_decode_handler(self.request.auth)
             return response.Response(data, status=status.HTTP_200_OK)
-
         except Exception as e:
             raise rest_exceptions.APIException(e)
 
@@ -27,7 +25,6 @@ class GetArticle(generics.RetrieveAPIView):
     serializer_class = serializers.ArticleSerializer
 
     def get_object(self):
-
         request = self.request
         article_url = None
         article_id = None
@@ -58,11 +55,10 @@ class GetArticleQuestions(generics.ListAPIView):
     pagination_serializer_class = serializers.PaginatedQuestionSerializer
 
     def get_queryset(self):
-
         queryset = models.Question.objects.filter(article__pk=self.kwargs['pk']).order_by('upvotes').reverse()
         filter = self.request.QUERY_PARAMS.get('filter', None)
-        if filter is not None:
 
+        if filter is not None:
             if filter == "me":
                 queryset = queryset.filter(user=self.request.user)
             if filter == "answered":
@@ -84,6 +80,67 @@ class GetOrUpdateArticleQuestion(generics.RetrieveUpdateDestroyAPIView):
             return question
         except:
             raise http.Http404
+
+class PostArticleQuestionFollow(generics.CreateAPIView):
+    model = models.QuestionFollow
+    serializer_class = serializers.QuestionFollowSerializer
+
+    def post(self, request, *args, **kwargs):
+
+        user = self.request.user
+        question = models.Question.objects.get(pk=self.kwargs['question_pk'])
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        follow = self.model(question=question, user=user, **serializer.validated_data)
+
+        try:
+            follow.clean()
+            follow.save()
+            return response.Response(self.serializer_class(follow).data, status=status.HTTP_201_CREATED)
+
+        except django_exceptions.ValidationError as e:
+            raise rest_exceptions.ValidationError(e.message)
+
+class FindArticleQuestionFollow(generics.RetrieveAPIView):
+    model = models.QuestionFollow
+    serializer_class = serializers.QuestionFollowSerializer
+
+    def get_object(self):
+        user = self.request.user
+        follow = None
+        try:
+            follow = self.model.objects.get(
+                question=models.Question.objects.get(pk=self.kwargs["question_pk"]),
+                user=self.request.user
+            )
+        except:
+            raise http.Http404
+
+        self.check_object_permissions(self.request, follow)
+
+        return follow
+
+class DeleteArticleQuestionFollow(generics.DestroyAPIView):
+    model = models.QuestionFollow
+    serializer_class = serializers.QuestionFollowSerializer
+    permission_classes = (permissions.IsOwnerOrNoPermissions,)
+
+    def get_object(self):
+        user = self.request.user
+        follow = None
+        try:
+            follow = self.model.objects.get(
+                pk=self.kwargs["follow_pk"],
+                question=models.Question.objects.get(pk=self.kwargs["question_pk"]),
+                user=self.request.user
+            )
+        except:
+            raise http.Http404
+
+        self.check_object_permissions(self.request, follow)
+
+        return follow
 
 class PostArticleQuestionUpvote(generics.CreateAPIView):
     model = models.UpVote
@@ -244,7 +301,6 @@ class GetPostUpdateOrDeleteArticleVote(generics.RetrieveUpdateDestroyAPIView):
 
         except django_exceptions.ValidationError as e:
             raise rest_exceptions.ValidationError(e.message)
-
 
 
 class GetArticleInsightVotes(generics.RetrieveAPIView):
