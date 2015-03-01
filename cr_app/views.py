@@ -1,11 +1,12 @@
 from django import http
-from django.core import exceptions as django_exceptions
-from rest_framework import generics, status, response, mixins, permissions as rest_permissions
+from django.core import mail, exceptions as django_exceptions
+from rest_framework import views, generics, status, response, mixins, permissions as rest_permissions
 from rest_framework import exceptions as rest_exceptions
 from cr_app.article_service.article import ArticleHelper
 from cr_app import models, serializers, permissions, codes
 from app_user.models import User
 from rest_framework_jwt.utils import jwt_decode_handler
+import json
 
 class GetUser(generics.RetrieveAPIView):
     queryset = User.objects.all()
@@ -312,3 +313,19 @@ class GetArticleInsightVotes(generics.RetrieveAPIView):
             return models.Article.objects.get(pk=self.kwargs['pk'])
         except:
             raise http.Http404
+
+
+class PostArticleSuggestion(views.APIView):
+    permission_classes = ()
+
+    def post(self, request, *args, **kwargs):
+        if "message" in request.data:
+            mail.send_mail('CR Suggestion',
+                           request.data["message"],
+                           'suggestions@cr.net',
+                           ['jbradley@mica.edu'],
+                           fail_silently=False,
+                           html_message='<h3>'+request.data["url"]+'</h3><br><div>'+request.data["message"]+'</div>')
+            return response.Response(json.dumps('suggestion sent'), status=status.HTTP_201_CREATED)
+        return rest_exceptions.APIException("Message Not Sent")
+

@@ -6,6 +6,8 @@ from cr_app import views
 
 urlpatterns = patterns('',
 
+    url(r'^article/suggestion/?', views.PostArticleSuggestion.as_view(), name='post-suggestion'),
+
     url(r'^article/(?P<pk>[\d]+)/topics/?', views.GetArticleInsightVotes.as_view(), name='article-insight-votes'),
     url(r'^article/(?P<pk>[\d]+)/questions/?', views.GetArticleQuestions.as_view(), name='article-questions'),
 
