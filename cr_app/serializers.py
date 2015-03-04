@@ -106,11 +106,10 @@ class ArticleSerializer(serializers.ModelSerializer):
     authors = AuthorSerializer(many=True)
     questions = serializers.SerializerMethodField('paginated_questions')
     insight_votes = serializers.SerializerMethodField()
-    user_insight_votes = serializers.SerializerMethodField()
 
     class Meta:
         model = models.Article
-        fields = ('pk', 'title', 'url', 'date', 'insight_votes', 'publisher', 'authors', "questions", "user_insight_votes")
+        fields = ('pk', 'title', 'url', 'date', 'insight_votes', 'publisher', 'authors', "questions")
 
     def paginated_questions(self, obj):
         paginator = Paginator(obj.questions.all().order_by('upvotes').reverse(), 10)
@@ -131,8 +130,3 @@ class ArticleSerializer(serializers.ModelSerializer):
                 pass
 
         return [v for k,v in insight_votes.items()]
-
-
-    def get_user_insight_votes(self, obj):
-        user_votes = models.Vote.objects.filter(user=self.context["request"].user, article=obj, insight__pk__in=obj.insights.all())
-        return {v.insight.pk: VoteSerializer(v).data for v in user_votes}
