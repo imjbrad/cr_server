@@ -325,7 +325,7 @@ class PostArticleSuggestion(views.APIView):
                            'suggestions@cr.net',
                            ['jbradley@mica.edu'],
                            fail_silently=False,
-                           html_message='<h3>'+request.data["url"]+'</h3><br><div>'+request.data["message"]+'</div>')
-            return response.Response(json.dumps('suggestion sent'), status=status.HTTP_201_CREATED)
+                           html_message='<h3>'+request.data[u'url']+'</h3><br><div>'+request.data[u'message']+'</div>')
+            return response.Response(status=status.HTTP_201_CREATED)
         return rest_exceptions.APIException("Message Not Sent")
 

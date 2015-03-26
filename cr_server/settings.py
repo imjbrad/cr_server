@@ -66,8 +66,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'cr_dev',
-        'USER': 'jordanbradley',
-        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
@@ -116,12 +114,12 @@ STATICFILES_DIRS = (
 
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.mandrillapp.com'
-EMAIL_PORT = 587
+EMAIL_PORT = 25
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'jbradley@mica.edu'
-EMAIL_HOST_PASSWORD = 'ciRNiFQFVBPqRI1YSmQ2Vw'
+EMAIL_HOST_PASSWORD = 'ciRNiFQFVBPqRI1YSmQ2Vw',
 
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
