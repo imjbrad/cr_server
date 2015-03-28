@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.contrib import admin
 from cr_app import urls as api_urls
+from cr_www import urls as www_urls
 
 urlpatterns = patterns('',
     # Examples:
@@ -9,4 +10,5 @@ urlpatterns = patterns('',
 
     url(r'^admin/', include(admin.site.urls)),
     url(r'^api/', include(api_urls)),
+    url(r'^', include(www_urls))
 )
