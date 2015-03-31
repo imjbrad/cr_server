@@ -1,1 +1,105 @@
-//example sass
+@import "../bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
+@import "bourbon/bourbon";
+
+#cr_header {
+  //border: 1px solid red;
+  overflow: auto;
+  height: 25vh;
+  background-image: url("../imgs/cover.jpg");
+  background-size: cover;
+  background-position: 40% center;
+
+  #logo{
+    height: 43px;
+    width: auto;
+    opacity: .4;
+    margin-top: 15px;
+    margin-left: 15px;
+    @include transition(all .2s $ease-in-out-quad);
+
+    &:hover{
+      opacity: 1;
+    }
+
+  }
+
+  #header_content {
+    margin:auto;
+    padding: 0 10vw;
+    @include display(flex);
+    @include flex-direction(column);
+    @include align-items(center);
+  }
+
+
+  #tagline {
+    font-family: "Helvetica";
+    font-weight: bold;
+    font-size: 3.3vw;
+    margin-bottom: 12px;
+    color: white;
+    text-align: center;
+    text-shadow: 1px 1px 2px black;
+
+    @media (min-width: $screen-sm-min) {
+      font-size: 1.6vw;
+    }
+
+  }
+
+  #open {
+    outline: none;
+    border: none;
+    background-image: url("../imgs/open_raised.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    background-color: transparent;
+    height: 56px;
+    width: 212px;
+
+    &:active {
+      background-image: url("../imgs/open_depressed.png");
+    }
+  }
+
+}
+
+#cr_demo{
+  height: 75vh;
+  background-color: #49494a;
+
+  #demo_area, #tab_area{
+    float: left;
+    //border: 1px solid red;
+  }
+
+  #demo_area {
+    overflow: hidden;
+    height: 75%;
+    width: 100%;
+
+    @media (min-width: $screen-sm-min) {
+      width: 66.66%;
+      padding: 40px;
+      height: 100%;
+    }
+
+    #fake_browser{
+      height: auto;
+      width: 100%;
+    }
+  }
+
+  #tab_area{
+    background-color: #2a2b2a;
+    height: 25%;
+    width: 100%;
+
+    @media (min-width: $screen-sm-min) {
+      width: 33.33%;
+      padding: 40px;
+      height: 100%;
+    }
+  }
+}

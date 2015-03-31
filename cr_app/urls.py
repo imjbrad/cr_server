@@ -26,7 +26,7 @@ urlpatterns = patterns('',
     url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?(?P<vote_pk>[\d]+)?/?', views.GetPostUpdateOrDeleteArticleVote.as_view(), name='edit-article-vote'),
     # url(r'^article/(?P<article_pk>[\d]+)/topic/(?P<insight_pk>[\d]+)/vote/?', views.PostArticleVote.as_view(), name='article-vote'),
 
-    url(r'^article/(?P<pk>[\d]+)?/?', views.GetArticle.as_view(), name='article-instance'),
+    url(r'^article/?(?P<pk>[\d]+)?/?', views.GetArticle.as_view(), name='article-instance'),
 
     url(r'^me/?', views.GetUser.as_view(), name='user-instance'),
 

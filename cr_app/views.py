@@ -24,6 +24,7 @@ class GetUser(generics.RetrieveAPIView):
 class GetArticle(generics.RetrieveAPIView):
     queryset = models.Article.objects.all()
     serializer_class = serializers.ArticleSerializer
+    permission_classes = ()
 
     def get_object(self):
         request = self.request
