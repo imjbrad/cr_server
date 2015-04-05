@@ -1,13 +1,28 @@
 @import "../bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
 @import "bourbon/bourbon";
 
+.edgeLoad-EDGE-110730135 { visibility:hidden; }
+
+*{
+  font-family: "Helvetica", sans-serif;
+}
+
+
 #cr_header {
   //border: 1px solid red;
   overflow: auto;
-  height: 25vh;
+  height: 28vh;
   background-image: url("../imgs/cover.jpg");
   background-size: cover;
   background-position: 40% center;
+  border-bottom: 2px solid #e6e7e8;
+  @include display(flex);
+  @include align-items(center);
+  @include justify-content(center);
+
+  @media (max-width: $screen-sm-max) {
+     height: 25vh;
+  }
 
   #logo{
     height: 43px;
@@ -15,6 +30,7 @@
     opacity: .4;
     margin-top: 15px;
     margin-left: 15px;
+    position: absolute;
     @include transition(all .2s $ease-in-out-quad);
 
     &:hover{
@@ -25,7 +41,6 @@
 
   #header_content {
     margin:auto;
-    padding: 0 10vw;
     @include display(flex);
     @include flex-direction(column);
     @include align-items(center);
@@ -66,8 +81,12 @@
 }
 
 #cr_demo{
-  height: 75vh;
+  height: 72vh;
   background-color: #49494a;
+
+  @media (max-width: $screen-sm-max) {
+     height: 75vh;
+  }
 
   #demo_area, #tab_area{
     float: left;
@@ -80,8 +99,7 @@
     width: 100%;
 
     @media (min-width: $screen-sm-min) {
-      width: 66.66%;
-      padding: 40px;
+      width: 62%;
       height: 100%;
     }
 
@@ -89,17 +107,62 @@
       height: auto;
       width: 100%;
     }
+
+    #demo_frame{
+      outline: none;
+      border: none;
+    }
   }
 
   #tab_area{
     background-color: #2a2b2a;
     height: 25%;
     width: 100%;
+    overflow-y: scroll;
 
     @media (min-width: $screen-sm-min) {
-      width: 33.33%;
-      padding: 40px;
+      width: 38%;
       height: 100%;
     }
+
+    .feature-tab {
+      padding: 32px;
+      color: white;
+      opacity: .3;
+      border-bottom: 1px solid #606161;
+      cursor: pointer;
+      @include transition(all .2s $ease-in-out-quad);
+
+      &:not(:last-of-type){
+        //border-bottom: 1px solid #606161;
+      }
+
+      &.active {
+        background-color: #c14237;
+        position: relative;
+        opacity: 1;
+
+        .feature-title{
+          border-bottom-color: #9b2a24;
+        }
+
+      }
+
+      .feature-title{
+        font-size: 20px;
+        font-weight: bold;
+        margin-top: 0;
+        padding-bottom: 13px;
+        margin-bottom: 13px;
+        border-bottom: 1px solid rgba(255, 255, 255,.5);
+      }
+
+      .feature-description{
+         font-size: 13px;
+         font-weight: 100;
+      }
+
+    }
+
   }
 }

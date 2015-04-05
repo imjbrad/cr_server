@@ -6,22 +6,52 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Welcome to CR</title>
     <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
+    <script type="text/javascript" src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/index.js" %}"></script>
 </head>
 <body>
 <header id="cr_header">
     <img id="logo" src="{% static "imgs/logo.png" %}"/>
     <div id="header_content">
-        <div id="tagline">You have the right to know more about the news and the journalists who deliver it.</div>
+        <div id="tagline">CR is a new platform for learning about and responding to critical news</div>
         <button id="open"></button>
     </div>
 </header>
 <section id="cr_demo">
 <div id="demo_area">
-<img id="fake_browser" src="{% static "imgs/browser.png" %}"/>
+<iframe id="demo_frame" width="100%" height="100%" src="{% static "landing_animation/landing_animate.html" %}"></iframe>
+{#<img id="fake_browser" src="{% static "imgs/browser.png" %}"/>#}
 </div>
 <div id="tab_area">
-
+    <div id="overview-tab" class="feature-tab" tab-id="overview">
+       <h2 class="feature-title">Be Conscious</h2>
+       <div class="feature-description">
+           CR is a simple assistant that helps you understand the news, ask powerful questions, and develop your
+           own, educated perspective on complex current events.
+           You can open CR in Chrome, and soon on your iOS device.
+       </div>
+    </div>
+    <div id="tab-2" class="feature-tab" tab-id="insights">
+       <h2 class="feature-title">Identify Bias, Have Perspective</h2>
+       <div class="feature-description">
+           On CR, you can contribute to <i>Insights</i>–– crowdsourced polls that help decode a journalist's take on a story. Insights enforce
+           transparency, and help you easily compare media perspectives on complex current events.
+       </div>
+    </div>
+    <div id="tab-3" class="feature-tab" tab-id="questions">
+       <h2 class="feature-title">Raise critical questions</h2>
+       <div class="feature-description">
+           Breaking news leaves us wanting to know more. On CR, you can Ask and Follow questions that are
+           important to you, and be notified directly by a journalist when she has answered your specific question in a new story.
+       </div>
+    </div>
+    <div class="feature-tab" tab-id="data">
+       <h2 class="feature-title">Interpret the world</h2>
+       <div class="feature-description">
+           Readers, journalists, and news organizations will soon be able to use CR to answer powerful questions about how we interpret
+           the world around us.
+       </div>
+    </div>
 </div>
 </section>
 </body>
