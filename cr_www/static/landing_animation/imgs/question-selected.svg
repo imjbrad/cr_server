@@ -1,0 +1,24 @@
+<!-- Generator: Adobe Illustrator 18.1.1, SVG Export Plug-In  -->
+<svg version="1.1"
+	 xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:a="http://ns.adobe.com/AdobeSVGViewerExtensions/3.0/"
+	 x="0px" y="0px" width="596.1px" height="206.5px" viewBox="0 0 596.1 206.5" enable-background="new 0 0 596.1 206.5"
+	 xml:space="preserve">
+<defs>
+</defs>
+<g>
+	<defs>
+		<path id="SVGID_1_" d="M554,205.5H42c-2.2,0-4-1.8-4-4V60c0-2.2,1.8-4,4-4h512c2.2,0,4,1.8,4,4v141.6
+			C558,203.7,556.2,205.5,554,205.5z"/>
+	</defs>
+	<clipPath id="SVGID_2_">
+		<use xlink:href="#SVGID_1_"  overflow="visible"/>
+	</clipPath>
+	<rect x="0" y="0" clip-path="url(#SVGID_2_)" fill="none" width="596.1" height="205.5"/>
+	<g clip-path="url(#SVGID_2_)">
+		<rect x="0" y="146.8" fill="#494949" width="596.1" height="58.7"/>
+		
+			<text transform="matrix(1 0 0 1 224.7826 183.2136)" opacity="0.85" fill="#FFFFFF" font-family="'MuseoSans-700'" font-size="22">Ask Questions</text>
+	</g>
+	<use xlink:href="#SVGID_1_"  overflow="visible" fill="none" stroke="#000000" stroke-width="2" stroke-miterlimit="10"/>
+</g>
+</svg>

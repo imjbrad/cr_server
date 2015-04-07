@@ -44,20 +44,24 @@
     @include display(flex);
     @include flex-direction(column);
     @include align-items(center);
+
+    @media (max-width: $screen-sm-max){
+    }
+
   }
 
 
   #tagline {
     font-family: "Helvetica";
     font-weight: bold;
-    font-size: 3.3vw;
+    font-size: 1.6vw;
     margin-bottom: 12px;
     color: white;
     text-align: center;
     text-shadow: 1px 1px 2px black;
 
-    @media (min-width: $screen-sm-min) {
-      font-size: 1.6vw;
+    @media (max-width: $screen-sm-max){
+      font-size: 5vw;
     }
 
   }
@@ -133,9 +137,10 @@
       cursor: pointer;
       @include transition(all .2s $ease-in-out-quad);
 
-      &:not(:last-of-type){
-        //border-bottom: 1px solid #606161;
+      &:hover {
+        opacity: .5;
       }
+
 
       &.active {
         background-color: #c14237;

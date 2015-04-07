@@ -17,5 +17,5 @@ $(document).ready(function(){
 
     window.setTimeout(function(){
         $("#overview-tab").click();
-    }, 1000);
+    }, 1500);
 });
