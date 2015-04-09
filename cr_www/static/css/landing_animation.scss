@@ -1,40 +1,5 @@
-/***custom landing_animation css**/
+/***custom style to be injected in the animation frame***/
 
-.typewriter {
-  color: black !important;
-  font-size: 20px !important;
-  margin: 10px 0 0 10px !important;
-  white-space: nowrap !important;
-  overflow: hidden !important;
-  width: 30em !important;
-  -webkit-animation-direction: alternate;
-  -webkit-animation: type 4s steps(60, end) 2;
+body{
+  overflow: hidden;
 }
-
-.typewriter:nth-child(2){
-  -webkit-animation-direction: alternate;
-  -webkit-animation: type2 8s steps(60, end) 2;
-}
-
-.cursor{
-  -webkit-animation: blink 1s infinite;
-}
-
-@-webkit-keyframes type{
-  from { width: 0; }
-}
-
-@-webkit-keyframes type2{
-  0%{width: 0;}
-  50%{width: 0;}
-  100%{ width: 100; }
-}
-
-@-webkit-keyframes blink{
-  to{opacity: .0;}
-}
-
-::selection{
-  background: black;
-}
-

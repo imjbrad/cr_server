@@ -40,7 +40,6 @@ class RequestBetaAccess(generics.CreateAPIView):
 
             try:
                 result = mandrill_client.messages.send(message=message, async=False)
-                #pass
             except mandrill.Error, e:
                 raise rest_exceptions.APIException(e)
 
