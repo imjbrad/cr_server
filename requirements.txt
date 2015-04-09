@@ -5,8 +5,11 @@ django-cors-headers==1.0.0
 django-toolbelt==0.0.1
 djangorestframework==3.0.2
 djangorestframework-jwt==1.1.1
+docopt==0.4.0
 gunicorn==19.1.1
 jsonfield==1.0.0
+mandrill==1.0.57
 psycopg2==2.5.4
+requests==2.6.0
 whitenoise==1.0.6
 wsgiref==0.1.2

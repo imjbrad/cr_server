@@ -1,12 +1,16 @@
 {% load staticfiles %}
 <!DOCTYPE html>
-<html>
+<html ng-app="cr_www">
 <head lang="en">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1">
     <title>Welcome to CR</title>
     <link rel="stylesheet" type="text/css" href="{% static "css/style.css" %}"/>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <script type="text/javascript" src="{% static "bower_components/jquery/dist/jquery.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "bower_components/bootstrap-sass/assets/javascripts/bootstrap/modal.js" %}"></script>
+    <script type="text/javascript" src="{% static "bower_components/angular/angular.min.js" %}"></script>
+    <script type="text/javascript" src="{% static "js/mandrill.min.js" %}"></script>
     <script type="text/javascript" src="{% static "js/index.js" %}"></script>
 </head>
 <body>
@@ -14,7 +18,7 @@
     <img id="logo" src="{% static "imgs/logo.png" %}"/>
     <div id="header_content">
         <div id="tagline">CR is a new platform for learning about and responding to critical news</div>
-        <button id="open"></button>
+        <button id="open" class="" data-toggle="modal" data-target="#invite-modal"></button>
     </div>
 </header>
 <section id="cr_demo">
@@ -40,7 +44,7 @@
        </div>
     </div>
     <div id="tab-3" class="feature-tab" tab-id="questions">
-       <h2 class="feature-title">Ask Questions, Start Dialouge</h2>
+       <h2 class="feature-title">Ask Questions, Start Dialogue</h2>
        <div class="feature-description">
            Breaking news leaves us wanting to know more. On CR, you can Ask and Follow questions that are
            important to you, then be notified directly by a journalist when your specific question has been answered in a new story.
@@ -55,5 +59,55 @@
 {#    </div>#}
 </div>
 </section>
+
+<!-- Modal -->
+<div class="modal fade" id="invite-modal" tabindex="-1" role="dialog" aria-labelledby="inviteModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content cr-modal-content">
+      <div class="modal-header cr-modal-header">
+        <button type="button" class="close cr-modal-close-button" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title cr-modal-title" id="inviteModalLabel">Early Access</h4>
+      </div>
+      <div class="modal-body cr-modal-body">
+        <div id="invite-description">
+            Right now, only early access users are able to open CR. If you’re interested in the possibilities of CR and want to test out what we've got so far, send us a tweet @crpress, or fill out this form and we'll get back to you today.
+        </div>
+        <div id="invite-form-container" ng-controller="InviteFormCtrl">
+                <div ng-show="formSubmitted && serverSuccess" id="success-message">
+                    Thanks! We'll get back to you today. Can't wait.
+                </div>
+                <div ng-show="formSubmitted && (serverError || invite_form.$invalid)" id="error-messages">
+                    <span ng-show="formSubmitted && serverError">There was a problem submitting your request. Try again?</span>
+                    <span ng-show="formSubmitted && invite_form.$invalid">
+                        <ul id="error-messages-list">
+                            <li class="error-message" ng-show="invite_form.$error.required">Some required fields are missing</li>
+                            <li class="error-message" ng-show="invite_form.email.$invalid">Please enter a valid email address</li>
+                        </ul>
+                    </span>
+                </div>
+            <form id="invite-form" name="invite_form" ng-hide="formSubmitted && serverSuccess" novalidate>
+                {% csrf_token %}
+                <div id="top-group">
+                    <span class="col-xs-12 col-sm-6 invite-form-input-wrapper">
+                        <input name="name" ng-model="invite.name" required spellcheck="false" id="name" class="invite-form-input" type="text" placeholder="Name*"/>
+                    </span>
+                    <span class="col-xs-12 col-sm-6 invite-form-input-wrapper">
+                        <input name="email" ng-model="invite.email" required spellcheck="false" id="email-field" class="invite-form-input" placeholder="Email*" type="email"/>
+                    </span>
+                </div>
+                <div id="comment-group">
+                    <textarea name="introduction" ng-model="invite.introduction" required placeholder="Introduce yourself*" id="comment-field" class="invite-form-input col-xs-12"></textarea>
+                </div>
+                <div id="bottom-group">
+                    <span id="journalist-check-field-label" style="margin-right: 2px;">Do you write for a news website or blog?</span>
+                    <input name="journalist_check" ng-model="invite.journalist_check" type="checkbox" id="journalist-check-field" class="invite-form-input"/>
+                    <button type="submit" class="red-button" id="submit-button">Send</button>
+                </div>
+            </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>

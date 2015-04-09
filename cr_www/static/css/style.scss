@@ -1,10 +1,42 @@
 @import "../bower_components/bootstrap-sass/assets/stylesheets/bootstrap";
 @import "bourbon/bourbon";
 
+@include font-face("Calson Semibold", "/fonts/ACaslongPro-Semibold.otf");
+
 .edgeLoad-EDGE-110730135 { visibility:hidden; }
 
-*{
+$red: #c14237;
+$dark-red: #9b2a24;
+
+body {
   font-family: "Helvetica", sans-serif;
+}
+
+.red-button {
+  background-color: $red;
+  border-radius: 3px;
+  border: 1px solid $dark-red;
+  padding: 15px 20px;
+  font-size: 15px;
+  vertical-align: middle;
+  color: white;
+//  @include transition(all .2s);
+//  @include display(flex);
+//  @include align-items(center);
+
+  &:hover{
+    background-color: $dark-red;
+  }
+
+  &:active, &:focus {
+    outline: none;
+    @include box-shadow(none);
+  }
+
+  & .fa{
+    margin-left: 6px;
+  }
+
 }
 
 
@@ -115,6 +147,7 @@
     #demo_frame{
       outline: none;
       border: none;
+      overflow: hidden;
     }
   }
 
@@ -122,7 +155,7 @@
     background-color: #2a2b2a;
     height: 25%;
     width: 100%;
-    overflow-y: scroll;
+    overflow-y: auto;
 
     @media (min-width: $screen-sm-min) {
       width: 38%;
@@ -143,7 +176,7 @@
 
 
       &.active {
-        background-color: #c14237;
+        background-color: $red;
         position: relative;
         opacity: 1;
 
@@ -170,4 +203,193 @@
     }
 
   }
+}
+
+#contact {
+  padding: 30px;
+  background-color: #f9f9f9;
+}
+
+.cr-modal-content{
+  border-radius: 0px;
+  border:none;
+  @include box-shadow(none);
+
+  .cr-modal-header {
+    background-color: #282e3a;
+    overflow: auto;
+    padding: 0;
+    height: 50px;
+    @include display(flex);
+    @include align-items(center);
+
+    .cr-modal-title {
+      color: white;
+      text-align: center;
+      padding: 10px;
+      width: calc(100% - 30px);
+      font-weight: bold;
+      font-size: 18px;
+      line-height: 20px;
+    }
+
+    .cr-modal-close-button{
+      width: 60px;
+      @include align-self(stretch);
+      border-right: 1px solid white;
+      color: white;
+      opacity: .6;
+      margin-top: 0; //override boostrap style
+
+      &:active, &:focus{
+        outline: none;
+      }
+
+      &:hover{
+        opacity: 1;
+      }
+    }
+
+  }
+
+  .cr-modal-body{
+    background-color: #f9f9f9;
+    padding: 25px 60px;
+
+    @media (max-width: $screen-sm-max) {
+      padding: 25px;
+    }
+
+  }
+
+}
+
+.modal-backdrop {
+  &.in{
+    opacity: 0.8;
+  }
+}
+
+#invite-description{
+  font-family: "Calson Semibold";
+  color: #2a2b2a;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+#invite-form{
+
+  &.submitted {
+
+    .invite-form-input{
+        &.ng-invalid {
+          background-color: rgba(255, 144, 44, .2);
+        }
+
+    }
+  }
+
+}
+
+#invite-form-container{
+
+    font-weight: bold;
+
+    .invite-form-input-wrapper{
+      padding: 0;
+
+      &:first-of-type {
+        padding-right: 6px;
+
+        @media (max-width: $screen-sm-max) {
+          padding-right:0;
+          margin-bottom: 10px;
+        }
+      }
+    }
+
+    .invite-form-input{
+      border-width: 1px;
+      border-color: #949594;
+      background-color: transparent;
+      border-radius: 0;
+      @include box-shadow(none);
+      @include transition(all .2s);
+
+        &:focus{
+          outline: none;
+          border-color: #2a2b2a;
+        }
+
+    }
+
+
+    #success-message, #error-messages{
+      font-family: "Calson Semibold" !important;
+      padding: 10px;
+      font-size: 10px;
+      margin-bottom: 10px;
+    }
+
+    #success-message{
+      background-color: rgb(93, 205, 78);
+    }
+
+    #error-messages{
+      background-color: rgb(255, 213, 129);
+
+      #error-messages-list{
+        margin:0;
+        margin-top: 3px;
+      }
+    }
+
+    #top-group, #comment-group, #bottom-group{
+      overflow: auto;
+    }
+
+    #top-group, #comment-group{
+      margin-bottom: 14px;
+    }
+
+    #name, #email-field{
+      border-color: transparent;
+      border-bottom-color: #949594;
+      width: 100%;
+
+
+      &:focus{
+        border-bottom-color: #2a2b2a;
+      }
+
+      padding: 6px;
+    }
+
+    #comment-field{
+      padding: 10px;
+      font-size: 11px;
+    }
+
+    #journalist-check-field-label{
+      font-size: 11px;
+    }
+
+    #journalist-check-field{
+      border-radius: 0px;
+      @include box-shadow(none);
+    }
+
+
+    #submit-button {
+      float: right;
+
+      @media (max-width: $screen-sm-max) {
+        float: none;
+        width: 100%;
+        margin-top: 14px;
+        text-align: center;
+      }
+
+    }
+
 }
