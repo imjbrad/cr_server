@@ -16,7 +16,7 @@ $(document).ready(function(){
     });
 
     window.setTimeout(function(){
-        //$("#overview-tab").click();
+        $("#overview-tab").click();
     }, 1500);
 
     $(document).on('click', '#submit-button', function(){
@@ -73,4 +73,10 @@ angular.module("cr_www", [])
            }
            return false;
         });
+    })
+    .directive("cr_www_xs", function(){
+
+    })
+    .directive("cr_www_sm+", function(){
+
     });
