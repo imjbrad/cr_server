@@ -1,6 +1,13 @@
 //example js
 $(document).ready(function(){
 
+    //make sure its chrome
+    var isChrome = window.chrome;
+
+    if(!isChrome){
+        alert("This product experiment works best with the latest version of Google Chrome. Please revisit in Chrome.")
+    }
+
     //tab system
     var activeTab = '';
     $(".feature-tab").each(function(i){
